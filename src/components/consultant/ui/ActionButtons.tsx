@@ -11,14 +11,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onEdit, onDelete }) => (
     <button
       aria-label="edit"
       onClick={onEdit}
-      className="p-1 rounded hover:bg-gray-100"
+      className="p-1 rounded hover:bg-blue-50 text-blue-600"
     >
       <Edit3 size={16} />
     </button>
     <button
       aria-label="delete"
       onClick={onDelete}
-      className="p-1 rounded hover:bg-gray-100"
+      className="p-1 rounded hover:bg-red-50 text-red-600"
     >
       <Trash2 size={16} />
     </button>

@@ -47,7 +47,7 @@ const ConsultantProfile: React.FC = () => {
 
   if (step === 'summary') {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <ConsultantCard consultant={consultant} />
         <ContactSection contact={consultant.contact} />
         <SkillsDisplay skills={consultant.skills} />
@@ -58,8 +58,11 @@ const ConsultantProfile: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <PersonalInfoForm defaultValues={consultant} onSubmit={updatePersonalInfo} />
+    <div className="space-y-6">
+      <PersonalInfoForm
+        defaultValues={consultant}
+        onSubmit={updatePersonalInfo}
+      />
       <ProfessionalInfoForm
         defaultValues={consultant}
         onSubmit={updateProfessionalInfo}
@@ -69,7 +72,7 @@ const ConsultantProfile: React.FC = () => {
       <button
         onClick={save}
         disabled={!validation.isValid}
-        className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50"
       >
         Sauvegarder
       </button>
