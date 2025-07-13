@@ -98,7 +98,9 @@ const JobCreation = () => {
   // Fonction pour naviguer entre les étapes
   const changerEtape = (nouvelleEtape) => {
     if (nouvelleEtape >= 1 && nouvelleEtape <= etapes.length) {
-      validerEtapeActuelle() && setEtapeActive(nouvelleEtape);
+      if (validerEtapeActuelle()) {
+        setEtapeActive(nouvelleEtape);
+      }
       window.scrollTo(0, 0);
     }
   };

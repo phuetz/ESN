@@ -497,7 +497,7 @@ const CompteRenduActivite = () => {
   // Helper function to handle decimal input
   const handleDecimalInput = (value, setter, index) => {
     // Remplacer la virgule par un point pour la décimale si nécessaire
-    let inputVal = value.replace(',', '.');
+    const inputVal = value.replace(',', '.');
 
     // Valider que c'est un nombre valide
     const val = inputVal === '' ? 0 : parseFloat(inputVal);

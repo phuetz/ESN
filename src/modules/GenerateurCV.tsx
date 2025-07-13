@@ -95,7 +95,9 @@ const GenerateurCV = () => {
 
   const changerEtape = (nouvelleEtape) => {
     if (nouvelleEtape >= 1 && nouvelleEtape <= etapes.length) {
-      validerEtapeActuelle() && setEtapeActive(nouvelleEtape);
+      if (validerEtapeActuelle()) {
+        setEtapeActive(nouvelleEtape);
+      }
       window.scrollTo(0, 0);
     }
   };
