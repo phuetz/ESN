@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dataSource = require('./data-source');
 const Consultant = require('./entity/Consultant');
-const app = express();
+const Client = require('./entity/Client');
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
@@ -54,6 +54,38 @@ app.put('/api/consultants/:id', async (req, res) => {
 app.delete('/api/consultants/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const repository = dataSource.getRepository('Consultant');
+  await repository.delete({ id });
+  res.status(204).send();
+});
+
+
+// -------------------- Clients endpoints --------------------
+app.get('/api/clients', async (req, res) => {
+  const repository = dataSource.getRepository('Client');
+  const clients = await repository.find();
+  res.json(clients);
+});
+
+app.post('/api/clients', async (req, res) => {
+  const repository = dataSource.getRepository('Client');
+  const client = repository.create(req.body);
+  const saved = await repository.save(client);
+  res.status(201).json(saved);
+});
+
+app.put('/api/clients/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const repository = dataSource.getRepository('Client');
+  const client = await repository.findOneBy({ id });
+  if (!client) return res.status(404).send();
+  repository.merge(client, req.body);
+  const saved = await repository.save(client);
+  res.json(saved);
+});
+
+app.delete('/api/clients/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const repository = dataSource.getRepository('Client');
   await repository.delete({ id });
   res.status(204).send();
 });
