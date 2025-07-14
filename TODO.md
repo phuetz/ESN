@@ -9,7 +9,7 @@ Cette liste regroupe les étapes à réaliser pour remplacer les données simul�
    - [ ] Générer la base et créer un script de peuplement avec les données de départ.
 2. **Créer les routes API**
    - [x] Endpoints REST pour récupérer, créer, mettre à jour et supprimer chaque entité.
-   - [ ] Gestion des filtres et de la pagination pour les listes.
+   - [x] Gestion des filtres et de la pagination pour les listes.
 3. **Adapter le front‑end**
    - [x] Créer des hooks (`useClients`, `useConsultants`, …) effectuant les appels `fetch` vers l'API.
    - [x] Remplacer les `useState` contenant des mocks par ces hooks.

@@ -18,7 +18,29 @@ let consultants = [
 ];
 
 app.get('/api/consultants', (req, res) => {
-  res.json(consultants);
+  let result = consultants;
+  const { status, search, limit, page = 1 } = req.query;
+
+  if (status) {
+    result = result.filter(c => c.status === status);
+  }
+
+  if (search) {
+    const s = search.toLowerCase();
+    result = result.filter(
+      c =>
+        c.firstName.toLowerCase().includes(s) ||
+        c.lastName.toLowerCase().includes(s)
+    );
+  }
+
+  if (limit) {
+    const l = parseInt(limit, 10);
+    const p = parseInt(page, 10) || 1;
+    result = result.slice((p - 1) * l, p * l);
+  }
+
+  res.json(result);
 });
 
 app.post('/api/consultants', (req, res) => {
