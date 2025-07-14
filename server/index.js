@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dataSource = require('./data-source');
 const Consultant = require('./entity/Consultant');
+const Client = require("./entity/Client");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -54,6 +55,43 @@ app.put('/api/consultants/:id', async (req, res) => {
 app.delete('/api/consultants/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const repository = dataSource.getRepository('Consultant');
+  await repository.delete({ id });
+  res.status(204).send();
+});
+
+app.get('/api/clients', async (req, res) => {
+  const repository = dataSource.getRepository('Client');
+  const { limit, page = 1 } = req.query;
+  let query = repository.createQueryBuilder('c');
+  if (limit) {
+    const l = parseInt(limit, 10);
+    const p = parseInt(page, 10) || 1;
+    query = query.skip((p - 1) * l).take(l);
+  }
+  const result = await query.getMany();
+  res.json(result);
+});
+
+app.post('/api/clients', async (req, res) => {
+  const repository = dataSource.getRepository('Client');
+  const client = repository.create(req.body);
+  const saved = await repository.save(client);
+  res.status(201).json(saved);
+});
+
+app.put('/api/clients/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const repository = dataSource.getRepository('Client');
+  const client = await repository.findOneBy({ id });
+  if (!client) return res.status(404).send();
+  repository.merge(client, req.body);
+  const saved = await repository.save(client);
+  res.json(saved);
+});
+
+app.delete('/api/clients/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const repository = dataSource.getRepository('Client');
   await repository.delete({ id });
   res.status(204).send();
 });

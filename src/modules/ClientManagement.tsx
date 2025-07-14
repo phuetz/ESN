@@ -12,45 +12,11 @@ import {
 import DataGridESN from '@/components/ui/DataGridESN';
 import ClientDashboard from './ClientDashboard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useClientData } from '@/hooks/useClientData';
   
 const ClientManagement = () => {
   const [viewMode, setViewMode] = useState('grid');
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: "TechSolutions SA",
-      type: "enterprise",
-      sector: "Finance & Assurance",
-      contactName: "Jean Dupont",
-      contactEmail: "j.dupont@techsolutions.fr",
-      contactPhone: "+33 1 23 45 67 89",
-      website: "www.techsolutions.fr",
-      address: "25 Avenue des Champs-Élysées",
-      city: "Paris",
-      postalCode: "75008",
-      country: "France",
-      notes: "Client important avec plusieurs projets stratégiques.",
-      status: "actif",
-      createdAt: "2022-06-15T10:00:00Z"
-    },
-    {
-      id: 2,
-      name: "Mairie de Lyon",
-      type: "public_sector",
-      sector: "Administration",
-      contactName: "Marie Lambert",
-      contactEmail: "m.lambert@mairie-lyon.fr",
-      contactPhone: "+33 4 72 10 30 30",
-      website: "www.lyon.fr",
-      address: "Place de la Comédie",
-      city: "Lyon",
-      postalCode: "69001",
-      country: "France",
-      notes: "Projet de modernisation des services numériques.",
-      status: "actif",
-      createdAt: "2023-02-20T14:30:00Z"
-    }
-  ]);
+  const { clients } = useClientData();
 
   const [projects, setProjects] = useState([
     {
