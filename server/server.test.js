@@ -2,53 +2,60 @@
 const request = require('supertest');
 const express = require('express');
 const cors = require('cors');
+const { DataSource } = require('typeorm');
+const Consultant = require('./entity/Consultant');
 
-// setup minimal app similar to index.js
-const app = express();
-app.use(cors());
-app.use(express.json());
+let app;
+let dataSource;
 
-let consultants;
+beforeAll(async () => {
+  dataSource = new DataSource({
+    type: 'sqlite',
+    database: ':memory:',
+    synchronize: true,
+    entities: [Consultant],
+  });
+  await dataSource.initialize();
 
-app.get('/api/consultants', (req, res) => {
-  let result = consultants;
-  const { status, search, limit, page = 1 } = req.query;
+  app = express();
+  app.use(cors());
+  app.use(express.json());
 
-  if (status) {
-    result = result.filter(c => c.status === status);
-  }
+  app.get('/api/consultants', async (req, res) => {
+    const repository = dataSource.getRepository('Consultant');
+    const { status, search, limit, page = 1 } = req.query;
 
-  if (search) {
-    const s = search.toLowerCase();
-    result = result.filter(
-      c =>
-        c.firstName.toLowerCase().includes(s) ||
-        c.lastName.toLowerCase().includes(s)
-    );
-  }
-
-  if (limit) {
-    const l = parseInt(limit, 10);
-    const p = parseInt(page, 10) || 1;
-    result = result.slice((p - 1) * l, p * l);
-  }
-
-  res.json(result);
-});
-
-beforeEach(() => {
-  consultants = [
-    {
-      id: 1,
-      firstName: 'Jean',
-      lastName: 'Dupont',
-      role: 'Dev',
-      status: 'assigned',
-      experience: 5
+    let query = repository.createQueryBuilder('c');
+    if (status) query = query.where('c.status = :status', { status });
+    if (search) {
+      const s = `%${search.toLowerCase()}%`;
+      query = query.andWhere('(LOWER(c.firstName) LIKE :s OR LOWER(c.lastName) LIKE :s)', { s });
     }
-  ];
+    if (limit) {
+      const l = parseInt(limit, 10);
+      const p = parseInt(page, 10) || 1;
+      query = query.skip((p - 1) * l).take(l);
+    }
+    const result = await query.getMany();
+    res.json(result);
+  });
 });
 
+afterAll(async () => {
+  await dataSource.destroy();
+});
+
+beforeEach(async () => {
+  const repo = dataSource.getRepository('Consultant');
+  await repo.clear();
+  await repo.save({
+    firstName: 'Jean',
+    lastName: 'Dupont',
+    role: 'Dev',
+    status: 'assigned',
+    experience: 5,
+  });
+});
 
 describe('GET /api/consultants', () => {
   it('returns list of consultants', async () => {
@@ -59,13 +66,13 @@ describe('GET /api/consultants', () => {
   });
 
   it('filters by status', async () => {
-    consultants.push({
-      id: 2,
+    const repo = dataSource.getRepository('Consultant');
+    await repo.save({
       firstName: 'Alice',
       lastName: 'Lemoine',
       role: 'Dev',
       status: 'available',
-      experience: 3
+      experience: 3,
     });
 
     const res = await request(app)
@@ -78,14 +85,14 @@ describe('GET /api/consultants', () => {
   });
 
   it('supports pagination', async () => {
+    const repo = dataSource.getRepository('Consultant');
     for (let i = 0; i < 10; i++) {
-      consultants.push({
-        id: i + 2,
+      await repo.save({
         firstName: `Test${i}`,
         lastName: 'User',
         role: 'Dev',
         status: 'assigned',
-        experience: i
+        experience: i,
       });
     }
 

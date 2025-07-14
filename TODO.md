@@ -4,9 +4,9 @@ Cette liste regroupe les étapes à réaliser pour remplacer les données simul�
 
 1. **Mettre en place le backend**
    - [x] Initialiser un projet Node.js/Express dans un dossier `server/`.
-   - [ ] Configurer un ORM (Prisma ou TypeORM) et la connexion à PostgreSQL.
-   - [ ] Définir les modèles `Consultant`, `Client`, `Project`, `Contract`, etc.
-   - [ ] Générer la base et créer un script de peuplement avec les données de départ.
+   - [x] Configurer un ORM (Prisma ou TypeORM) et la connexion à PostgreSQL.
+   - [x] Définir les modèles `Consultant`, `Client`, `Project`, `Contract`, etc.
+   - [x] Générer la base et créer un script de peuplement avec les données de départ.
 2. **Créer les routes API**
    - [x] Endpoints REST pour récupérer, créer, mettre à jour et supprimer chaque entité.
    - [x] Gestion des filtres et de la pagination pour les listes.
@@ -16,7 +16,7 @@ Cette liste regroupe les étapes à réaliser pour remplacer les données simul�
    - [x] Prévoir des états de chargement/erreur.
 4. **Mise à jour des tests**
    - [x] Écrire des tests backend pour les routes (Jest + Supertest).
-   - [ ] Adapter les tests React existants pour utiliser `msw` ou `jest-fetch-mock` et simuler l'API.
+   - [x] Adapter les tests React existants pour utiliser `msw` ou `jest-fetch-mock` et simuler l'API.
 5. **Déploiement et documentation**
    - [x] Documenter la configuration de la base et la procédure de démarrage du serveur.
    - [x] Ajouter des scripts npm (`npm run server`, `npm run dev:full` pour lancer front et back).
