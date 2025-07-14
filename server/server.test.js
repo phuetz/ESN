@@ -5,6 +5,7 @@ const cors = require('cors');
 const { DataSource } = require('typeorm');
 const Consultant = require('./entity/Consultant');
 
+const Client = require('./entity/Client');
 let app;
 let dataSource;
 
@@ -13,13 +14,19 @@ beforeAll(async () => {
     type: 'sqlite',
     database: ':memory:',
     synchronize: true,
-    entities: [Consultant],
+    entities: [Consultant, Client],
   });
   await dataSource.initialize();
 
   app = express();
   app.use(cors());
   app.use(express.json());
+
+  app.get('/api/clients', async (req, res) => {
+    const repository = dataSource.getRepository('Client');
+    const clients = await repository.find();
+    res.json(clients);
+  });
 
   app.get('/api/consultants', async (req, res) => {
     const repository = dataSource.getRepository('Consultant');
@@ -46,15 +53,18 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  const repo = dataSource.getRepository('Consultant');
-  await repo.clear();
-  await repo.save({
+  const cRepo = dataSource.getRepository('Consultant');
+  const cliRepo = dataSource.getRepository('Client');
+  await cRepo.clear();
+  await cliRepo.clear();
+  await cRepo.save({
     firstName: 'Jean',
     lastName: 'Dupont',
     role: 'Dev',
     status: 'assigned',
     experience: 5,
   });
+  await cliRepo.save({ name: 'TechSolutions', status: 'actif' });
 });
 
 describe('GET /api/consultants', () => {
@@ -103,5 +113,14 @@ describe('GET /api/consultants', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveLength(5);
     expect(res.body[0].firstName).toBe('Test4');
+  });
+});
+
+describe('GET /api/clients', () => {
+  it('returns list of clients', async () => {
+    const res = await request(app).get('/api/clients');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].name).toBe('TechSolutions');
   });
 });
