@@ -1,69 +1,70 @@
 const express = require('express');
 const cors = require('cors');
+const dataSource = require('./data-source');
+const Consultant = require('./entity/Consultant');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
-let consultants = [
-  {
-    id: 1,
-    firstName: 'Jean',
-    lastName: 'Dupont',
-    role: 'Développeur Full Stack',
-    status: 'assigned',
-    experience: 5
-  }
-];
-
-app.get('/api/consultants', (req, res) => {
-  let result = consultants;
+app.get('/api/consultants', async (req, res) => {
+  const repository = dataSource.getRepository('Consultant');
   const { status, search, limit, page = 1 } = req.query;
 
-  if (status) {
-    result = result.filter(c => c.status === status);
-  }
-
+  const where = {};
+  if (status) where.status = status;
   if (search) {
-    const s = search.toLowerCase();
-    result = result.filter(
-      c =>
-        c.firstName.toLowerCase().includes(s) ||
-        c.lastName.toLowerCase().includes(s)
-    );
+    const s = `%${search.toLowerCase()}%`;
+    where.firstName = where.lastName = undefined; // placeholder to use query builder
   }
 
+  let query = repository.createQueryBuilder('c');
+  if (status) query = query.where('c.status = :status', { status });
+  if (search) {
+    const s = `%${search.toLowerCase()}%`;
+    query = query.andWhere('(LOWER(c.firstName) LIKE :s OR LOWER(c.lastName) LIKE :s)', { s });
+  }
   if (limit) {
     const l = parseInt(limit, 10);
     const p = parseInt(page, 10) || 1;
-    result = result.slice((p - 1) * l, p * l);
+    query = query.skip((p - 1) * l).take(l);
   }
-
+  const result = await query.getMany();
   res.json(result);
 });
 
-app.post('/api/consultants', (req, res) => {
-  const consultant = req.body;
-  consultant.id = consultants.length + 1;
-  consultants.push(consultant);
-  res.status(201).json(consultant);
+app.post('/api/consultants', async (req, res) => {
+  const repository = dataSource.getRepository('Consultant');
+  const consultant = repository.create(req.body);
+  const saved = await repository.save(consultant);
+  res.status(201).json(saved);
 });
 
-app.put('/api/consultants/:id', (req, res) => {
+app.put('/api/consultants/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const index = consultants.findIndex(c => c.id === id);
-  if (index === -1) return res.status(404).send();
-  consultants[index] = { ...consultants[index], ...req.body };
-  res.json(consultants[index]);
+  const repository = dataSource.getRepository('Consultant');
+  const consultant = await repository.findOneBy({ id });
+  if (!consultant) return res.status(404).send();
+  repository.merge(consultant, req.body);
+  const saved = await repository.save(consultant);
+  res.json(saved);
 });
 
-app.delete('/api/consultants/:id', (req, res) => {
+app.delete('/api/consultants/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  consultants = consultants.filter(c => c.id !== id);
+  const repository = dataSource.getRepository('Consultant');
+  await repository.delete({ id });
   res.status(204).send();
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+dataSource
+  .initialize()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to initialize database', err);
+  });
