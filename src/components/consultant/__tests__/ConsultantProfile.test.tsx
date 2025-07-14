@@ -1,8 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import fetchMock from 'jest-fetch-mock';
 import ConsultantProfile from '../ConsultantProfile';
 
 describe('ConsultantProfile', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
   it('renders forms and allows saving', () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ id: '1' }));
     render(<ConsultantProfile />);
     expect(screen.getByPlaceholderText('Prénom')).toBeInTheDocument();
     fireEvent.change(screen.getByPlaceholderText('Prénom'), { target: { value: 'John' } });
