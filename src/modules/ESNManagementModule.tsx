@@ -16,7 +16,7 @@ import { ESNBusinessDashboard } from './ESNBusinessDashboard.tsx';
 import ConsultantDashboard from './ConsultantDashboard';
 import JobCreation from './JobCreation';
 import ConsultantCalendar from './ConsultantCalendar';
-import GenerateurCV from './GenerateurCV';
+import CVGenerator from '@/components/cv/CVGenerator';
 import JobSearchModule from './JobSearchModule';
 import CompteRenduActivite from './CompteRenduActivite';
 
@@ -38,7 +38,7 @@ const ESNManagementModule = () => {
       case "business":
         return <ESNBusinessDashboard />; // Utilisation du nom corrigé
       case "cv":
-        return <GenerateurCV />;
+        return <CVGenerator />;
       case "jobs":
         return <JobSearchModule />;
       case "cra":
