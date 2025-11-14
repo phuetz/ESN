@@ -75,13 +75,13 @@ export const createConsultant = asyncHandler(
     const consultantRepository = AppDataSource.getRepository(Consultant);
 
     const consultant = consultantRepository.create(req.body);
-    await consultantRepository.save(consultant);
+    const savedConsultant = await consultantRepository.save(consultant);
 
-    logger.info(`Consultant created: ${consultant.firstName} ${consultant.lastName}`);
+    logger.info(`Consultant created: ${savedConsultant.firstName} ${savedConsultant.lastName}`);
 
     res.status(201).json({
       success: true,
-      data: consultant,
+      data: savedConsultant,
     });
   }
 );

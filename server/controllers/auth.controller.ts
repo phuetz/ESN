@@ -36,9 +36,11 @@ export const register = asyncHandler(
     logger.info(`New user registered: ${email}`);
 
     // Generate token
-    const token = jwt.sign({ userId: user.id }, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
-    });
+    const token = jwt.sign(
+      { userId: user.id },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+    );
 
     res.status(201).json({
       success: true,
@@ -80,9 +82,11 @@ export const login = asyncHandler(
     logger.info(`User logged in: ${email}`);
 
     // Generate token
-    const token = jwt.sign({ userId: user.id }, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
-    });
+    const token = jwt.sign(
+      { userId: user.id },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+    );
 
     res.json({
       success: true,

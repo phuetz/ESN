@@ -110,15 +110,15 @@ export const createProject = asyncHandler(
       consultantId,
     });
 
-    await projectRepository.save(project);
+    const createdProject = await projectRepository.save(project);
 
     // Reload with relations
     const savedProject = await projectRepository.findOne({
-      where: { id: project.id },
+      where: { id: createdProject.id },
       relations: ['client', 'consultant'],
     });
 
-    logger.info(`Project created: ${project.name}`);
+    logger.info(`Project created: ${createdProject.name}`);
 
     res.status(201).json({
       success: true,
