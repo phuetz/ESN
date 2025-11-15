@@ -14,6 +14,25 @@ import authRoutes from './routes/auth.routes';
 import consultantRoutes from './routes/consultant.routes';
 import clientRoutes from './routes/client.routes';
 import projectRoutes from './routes/project.routes';
+// CRM routes
+import opportunityRoutes from './routes/opportunity.routes';
+import activityRoutes from './routes/activity.routes';
+import contactRoutes from './routes/contact.routes';
+// Invoicing routes
+import quoteRoutes from './routes/quote.routes';
+import invoiceRoutes from './routes/invoice.routes';
+// Recruitment routes
+import candidateRoutes from './routes/candidate.routes';
+import interviewRoutes from './routes/interview.routes';
+// HR routes
+import leaveRoutes from './routes/leave.routes';
+import expenseRoutes from './routes/expense.routes';
+// Resource planning routes
+import missionRoutes from './routes/mission.routes';
+import timesheetRoutes from './routes/timesheet.routes';
+// Skills management routes
+import skillRoutes from './routes/skill.routes';
+import consultantSkillRoutes from './routes/consultant-skill.routes';
 
 const app = express();
 
@@ -71,6 +90,25 @@ app.use(`${apiVersion}/auth`, authRoutes);
 app.use(`${apiVersion}/consultants`, consultantRoutes);
 app.use(`${apiVersion}/clients`, clientRoutes);
 app.use(`${apiVersion}/projects`, projectRoutes);
+// CRM routes
+app.use(`${apiVersion}/opportunities`, opportunityRoutes);
+app.use(`${apiVersion}/activities`, activityRoutes);
+app.use(`${apiVersion}/contacts`, contactRoutes);
+// Invoicing routes
+app.use(`${apiVersion}/quotes`, quoteRoutes);
+app.use(`${apiVersion}/invoices`, invoiceRoutes);
+// Recruitment routes
+app.use(`${apiVersion}/candidates`, candidateRoutes);
+app.use(`${apiVersion}/interviews`, interviewRoutes);
+// HR routes
+app.use(`${apiVersion}/leaves`, leaveRoutes);
+app.use(`${apiVersion}/expenses`, expenseRoutes);
+// Resource planning routes
+app.use(`${apiVersion}/missions`, missionRoutes);
+app.use(`${apiVersion}/timesheets`, timesheetRoutes);
+// Skills management routes
+app.use(`${apiVersion}/skills`, skillRoutes);
+app.use(`${apiVersion}/consultant-skills`, consultantSkillRoutes);
 
 // Setup Swagger documentation
 setupSwagger(app);
