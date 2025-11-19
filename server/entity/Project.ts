@@ -71,6 +71,7 @@ export class Project {
   client!: Client;
 
   @Column()
+  @Index()
   clientId!: number;
 
   @ManyToOne(() => Consultant, (consultant) => consultant.projects, {
@@ -80,6 +81,7 @@ export class Project {
   consultant?: Consultant;
 
   @Column({ nullable: true })
+  @Index()
   consultantId?: number;
 
   @CreateDateColumn()
