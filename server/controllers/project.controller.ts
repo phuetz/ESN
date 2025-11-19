@@ -110,7 +110,7 @@ export const createProject = asyncHandler(
       consultantId,
     });
 
-    const createdProject = await projectRepository.save(project);
+    const createdProject = await projectRepository.save(project) as unknown as Project;
 
     // Reload with relations
     const savedProject = await projectRepository.findOne({

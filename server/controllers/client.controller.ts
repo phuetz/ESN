@@ -74,7 +74,7 @@ export const createClient = asyncHandler(
     const clientRepository = AppDataSource.getRepository(Client);
 
     const client = clientRepository.create(req.body);
-    const savedClient = await clientRepository.save(client);
+    const savedClient = await clientRepository.save(client) as unknown as Client;
 
     logger.info(`Client created: ${savedClient.name}`);
 

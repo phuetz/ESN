@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum UserRole {
@@ -36,13 +37,18 @@ export class User {
     enum: UserRole,
     default: UserRole.CONSULTANT,
   })
+  @Index()
   role!: UserRole;
 
   @Column({ default: true })
+  @Index()
   isActive!: boolean;
 
   @Column({ nullable: true })
   lastLoginAt?: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  refreshToken?: string;
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -53,9 +59,9 @@ export class User {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  // Virtual field - don't include password in JSON responses
+  // Virtual field - don't include password and refreshToken in JSON responses
   toJSON() {
-    const { password, ...user } = this;
+    const { password, refreshToken, ...user } = this;
     return user;
   }
 }

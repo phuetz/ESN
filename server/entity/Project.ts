@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Client } from './Client';
 import { Consultant } from './Consultant';
@@ -35,12 +36,15 @@ export class Project {
     enum: ProjectStatus,
     default: ProjectStatus.PLANNED,
   })
+  @Index()
   status!: ProjectStatus;
 
   @Column({ type: 'date' })
+  @Index()
   startDate!: Date;
 
   @Column({ type: 'date', nullable: true })
+  @Index()
   endDate?: Date;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })

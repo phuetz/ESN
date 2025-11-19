@@ -79,4 +79,41 @@ router.post('/login', authLimiter, validateDto(LoginDto), authController.login);
  */
 router.get('/profile', authenticate, authController.getProfile);
 
+/**
+ * @swagger
+ * /api/v1/auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Refresh access token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ */
+router.post('/refresh', authController.refreshToken);
+
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Logout user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
+router.post('/logout', authenticate, authController.logout);
+
 export default router;
