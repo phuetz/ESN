@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User, LoginCredentials, RegisterData } from '../services/authService';
 import { useToast } from '../components/ui/Toast';
+import logger from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -91,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const profile = await authService.getProfile();
       setUser(profile);
     } catch (error) {
-      console.error('Failed to refresh profile:', error);
+      logger.error('Failed to refresh profile', error, 'useAuth');
       logout();
     }
   };

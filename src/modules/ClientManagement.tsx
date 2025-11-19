@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   Building2, User, Phone, Mail, X, ZoomIn, ZoomOut,
   Building, Users, Globe, MapPin, Search, Download,
   Filter, Save, Maximize2, Minimize2, Map, Plus,
@@ -12,6 +12,7 @@ import {
 import DataGridESN from '@/components/ui/DataGridESN';
 import ClientDashboard from './ClientDashboard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import logger from '@/utils/logger';
   
 import { useClientData } from '@/components/client/hooks/useClientData';
 const ClientManagement = () => {
@@ -159,13 +160,13 @@ const ClientManagement = () => {
   const actionButtons = [
     {
       icon: <Plus size={18} />,
-      onClick: () => console.log('Add client'),
+      onClick: () => logger.debug('Add client action triggered', {}, 'ClientManagement'),
       title: "Ajouter un client"
     }
   ];
 
   const handleViewClient = (client) => {
-    console.log('View client:', client);
+    logger.debug('View client', { client }, 'ClientManagement');
   };
 
   return (

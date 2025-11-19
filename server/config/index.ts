@@ -1,8 +1,30 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { validateEnv, checkSecretSecurity, generateDevSecret } from './envValidator';
 
 // Load environment variables from .env file
 dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+// Generate dev secrets if not in production and secrets are not set
+if (process.env.NODE_ENV !== 'production') {
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = generateDevSecret(64);
+    console.warn('⚠️  Generated temporary JWT_SECRET for development. Set JWT_SECRET in .env for persistence.');
+  }
+  if (!process.env.JWT_REFRESH_SECRET) {
+    process.env.JWT_REFRESH_SECRET = generateDevSecret(64);
+    console.warn('⚠️  Generated temporary JWT_REFRESH_SECRET for development. Set JWT_REFRESH_SECRET in .env for persistence.');
+  }
+}
+
+// Validate environment variables
+try {
+  validateEnv();
+  checkSecretSecurity();
+} catch (error) {
+  console.error('❌ Environment validation failed:', error);
+  process.exit(1);
+}
 
 interface Config {
   node_env: string;
@@ -51,9 +73,9 @@ const config: Config = {
     password: process.env.DB_PASSWORD,
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'default-secret-change-this',
+    secret: process.env.JWT_SECRET as string, // Validated by envValidator
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'default-refresh-secret',
+    refreshSecret: process.env.JWT_REFRESH_SECRET as string, // Validated by envValidator
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
   cors: {

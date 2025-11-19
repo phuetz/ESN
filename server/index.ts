@@ -8,6 +8,7 @@ import { initializeDatabase } from './data-source';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimit';
 import { setupSwagger } from './config/swagger';
+import { enhancedSecurityHeaders, apiSecurityHeaders } from './middleware/securityHeaders';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -19,6 +20,7 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+app.use(enhancedSecurityHeaders);
 
 // CORS configuration
 app.use(
@@ -63,8 +65,9 @@ app.get('/health', (req: Request, res: Response) => {
 // API routes with versioning
 const apiVersion = `/api/${config.api.version}`;
 
-// Apply rate limiting to API routes
+// Apply rate limiting and security headers to API routes
 app.use(apiVersion, apiLimiter);
+app.use(apiVersion, apiSecurityHeaders);
 
 // Mount routes
 app.use(`${apiVersion}/auth`, authRoutes);
