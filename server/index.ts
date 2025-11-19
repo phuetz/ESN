@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
 import config from './config';
 import logger from './utils/logger';
 import { initializeDatabase } from './data-source';
@@ -13,6 +14,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimit';
 import { setupSwagger } from './config/swagger';
 import { enhancedSecurityHeaders, apiSecurityHeaders } from './middleware/securityHeaders';
+import { csrfTokenGenerator, csrfProtection, getCsrfToken } from './middleware/csrf';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -60,6 +62,9 @@ app.use(
 // Body parsing middleware with size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Cookie parser middleware - must be before routes that use cookies
+app.use(cookieParser());
 
 // Data sanitization against NoSQL injection attacks
 app.use(mongoSanitize());
@@ -192,6 +197,15 @@ const apiVersion = `/api/${config.api.version}`;
 // Apply rate limiting and security headers to API routes
 app.use(apiVersion, apiLimiter);
 app.use(apiVersion, apiSecurityHeaders);
+
+// CSRF Protection middleware
+// 1. Generate and send CSRF tokens on GET requests
+app.use(apiVersion, csrfTokenGenerator);
+// 2. Validate CSRF tokens on unsafe methods (POST, PUT, DELETE, PATCH)
+app.use(apiVersion, csrfProtection);
+
+// CSRF token endpoint - allows clients to get a fresh token
+app.get(`${apiVersion}/csrf-token`, getCsrfToken);
 
 // Mount routes
 app.use(`${apiVersion}/auth`, authRoutes);

@@ -8,6 +8,44 @@ import { AuthRequest } from '../middleware/auth';
 import config from '../config';
 import logger from '../utils/logger';
 
+/**
+ * Set secure httpOnly cookies for JWT tokens
+ * This prevents XSS attacks by making tokens inaccessible to JavaScript
+ */
+const setTokenCookies = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string
+) => {
+  const isProduction = config.node_env === 'production';
+
+  // Access token cookie (short-lived, 7 days by default)
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true, // Prevents JavaScript access (XSS protection)
+    secure: isProduction, // Only sent over HTTPS in production
+    sameSite: 'strict', // CSRF protection
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    path: '/', // Available for all routes
+  });
+
+  // Refresh token cookie (long-lived, 30 days by default)
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+    path: '/api/v1/auth/refresh', // Only available for refresh endpoint
+  });
+};
+
+/**
+ * Clear authentication cookies on logout
+ */
+const clearTokenCookies = (res: Response) => {
+  res.clearCookie('accessToken', { path: '/' });
+  res.clearCookie('refreshToken', { path: '/api/v1/auth/refresh' });
+};
+
 // Helper function to validate email format
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -122,10 +160,17 @@ export const register = asyncHandler(
         role: savedUser.role,
       });
 
+      // Set httpOnly cookies for tokens (secure against XSS)
+      setTokenCookies(res, token, refreshToken);
+
+      // Return user data without tokens in response body
+      // Tokens are now in httpOnly cookies
       res.status(201).json({
         success: true,
         data: {
           user: savedUser.toJSON(),
+          // Legacy: still return tokens for backward compatibility
+          // TODO: Remove after frontend migration is complete
           token,
           refreshToken,
         },
@@ -230,10 +275,15 @@ export const login = asyncHandler(
         role: user.role,
       });
 
+      // Set httpOnly cookies for tokens (secure against XSS)
+      setTokenCookies(res, token, refreshToken);
+
       res.json({
         success: true,
         data: {
           user: user.toJSON(),
+          // Legacy: still return tokens for backward compatibility
+          // TODO: Remove after frontend migration is complete
           token,
           refreshToken,
         },
@@ -263,7 +313,13 @@ export const getProfile = asyncHandler(
 
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { refreshToken } = req.body;
+    // Try to get refresh token from httpOnly cookie first (more secure)
+    // Fall back to request body for backward compatibility
+    let refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken && req.body.refreshToken) {
+      refreshToken = req.body.refreshToken;
+    }
 
     if (!refreshToken) {
       throw new AppError('Refresh token is required', 400);
@@ -309,9 +365,14 @@ export const refreshToken = asyncHandler(
 
       logger.info(`Token refreshed for user: ${user.email}`);
 
+      // Set new httpOnly cookies for tokens
+      setTokenCookies(res, newToken, newRefreshToken);
+
       res.json({
         success: true,
         data: {
+          // Legacy: still return tokens for backward compatibility
+          // TODO: Remove after frontend migration is complete
           token: newToken,
           refreshToken: newRefreshToken,
         },
@@ -333,9 +394,12 @@ export const logout = asyncHandler(
 
     const userRepository = AppDataSource.getRepository(User);
 
-    // Invalidate refresh token
+    // Invalidate refresh token in database
     req.user.refreshToken = undefined;
     await userRepository.save(req.user);
+
+    // Clear httpOnly cookies
+    clearTokenCookies(res);
 
     logger.info(`User logged out: ${req.user.email}`);
 

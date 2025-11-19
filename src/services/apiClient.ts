@@ -23,10 +23,13 @@ export interface ApiRequestConfig {
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private csrfToken: string | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    // Load token from localStorage on initialization
+    // SECURITY: Tokens are now stored in httpOnly cookies (secure against XSS)
+    // Legacy localStorage support maintained for backward compatibility only
+    // TODO: Remove localStorage after migration is complete
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('auth_token');
     }
@@ -34,6 +37,8 @@ class ApiClient {
 
   setToken(token: string | null) {
     this.token = token;
+    // SECURITY: Deprecated - tokens should be in httpOnly cookies
+    // This is kept for backward compatibility only
     if (typeof window !== 'undefined') {
       if (token) {
         localStorage.setItem('auth_token', token);
@@ -47,7 +52,54 @@ class ApiClient {
     return this.token;
   }
 
-  private getHeaders(customHeaders?: Record<string, string>): Headers {
+  /**
+   * Clear tokens from localStorage (for migration)
+   * Call this after successful login/register to migrate from localStorage to cookies
+   */
+  clearLegacyTokens() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      this.token = null;
+    }
+  }
+
+  /**
+   * Fetch CSRF token from server
+   * This should be called before making any POST/PUT/DELETE requests
+   */
+  async fetchCsrfToken(): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseURL}/csrf-token`, {
+        method: 'GET',
+        credentials: 'include', // Send cookies
+      });
+
+      if (response.ok) {
+        // CSRF token is set in cookie by server
+        // Also read from response header for client-side storage
+        const csrfToken = response.headers.get('X-CSRF-Token');
+        if (csrfToken) {
+          this.csrfToken = csrfToken;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch CSRF token:', error);
+      // Continue anyway - server will return 403 if CSRF is required
+    }
+  }
+
+  /**
+   * Get CSRF token - fetch if not available
+   */
+  private async getCsrfToken(): Promise<string | null> {
+    if (!this.csrfToken) {
+      await this.fetchCsrfToken();
+    }
+    return this.csrfToken;
+  }
+
+  private async getHeaders(customHeaders?: Record<string, string>, includeCsrf: boolean = false): Promise<Headers> {
     const headers = new Headers({
       'Content-Type': 'application/json',
       ...customHeaders,
@@ -55,6 +107,14 @@ class ApiClient {
 
     if (this.token) {
       headers.set('Authorization', `Bearer ${this.token}`);
+    }
+
+    // Add CSRF token for unsafe methods (POST, PUT, DELETE, PATCH)
+    if (includeCsrf) {
+      const csrfToken = await this.getCsrfToken();
+      if (csrfToken) {
+        headers.set('X-CSRF-Token', csrfToken);
+      }
     }
 
     return headers;
@@ -99,10 +159,18 @@ class ApiClient {
     config?: ApiRequestConfig
   ): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
+    const headers = await this.getHeaders(config?.headers, false);
     const response = await fetch(url, {
       method: 'GET',
-      headers: this.getHeaders(config?.headers),
+      headers,
+      credentials: 'include', // IMPORTANT: Send httpOnly cookies with requests
     });
+
+    // Update CSRF token from response if available
+    const csrfToken = response.headers.get('X-CSRF-Token');
+    if (csrfToken) {
+      this.csrfToken = csrfToken;
+    }
 
     return this.handleResponse<T>(response);
   }
@@ -113,10 +181,12 @@ class ApiClient {
     config?: ApiRequestConfig
   ): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
+    const headers = await this.getHeaders(config?.headers, true); // Include CSRF for POST
     const response = await fetch(url, {
       method: 'POST',
-      headers: this.getHeaders(config?.headers),
+      headers,
       body: JSON.stringify(data),
+      credentials: 'include', // IMPORTANT: Send httpOnly cookies with requests
     });
 
     return this.handleResponse<T>(response);
@@ -128,10 +198,12 @@ class ApiClient {
     config?: ApiRequestConfig
   ): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
+    const headers = await this.getHeaders(config?.headers, true); // Include CSRF for PUT
     const response = await fetch(url, {
       method: 'PUT',
-      headers: this.getHeaders(config?.headers),
+      headers,
       body: JSON.stringify(data),
+      credentials: 'include', // IMPORTANT: Send httpOnly cookies with requests
     });
 
     return this.handleResponse<T>(response);
@@ -142,9 +214,11 @@ class ApiClient {
     config?: ApiRequestConfig
   ): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
+    const headers = await this.getHeaders(config?.headers, true); // Include CSRF for DELETE
     const response = await fetch(url, {
       method: 'DELETE',
-      headers: this.getHeaders(config?.headers),
+      headers,
+      credentials: 'include', // IMPORTANT: Send httpOnly cookies with requests
     });
 
     return this.handleResponse<T>(response);
