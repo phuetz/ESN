@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
   Building2, User, Phone, Mail, ZoomIn, ZoomOut, Calendar,
@@ -10,6 +10,7 @@ import {
   Trash2, Edit, FileText, MoreHorizontal, Briefcase, Euro, Eye
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import logger from '@/utils/logger';
 
 const ClientDashboard = ({ clients = [], projects = [], contracts = [] }) => {
   const [timeRange, setTimeRange] = useState('year');
@@ -196,7 +197,7 @@ const ClientDashboard = ({ clients = [], projects = [], contracts = [] }) => {
           }
         }
       } catch (e) {
-        console.error("Erreur lors du traitement de la date:", e);
+        logger.error("Erreur lors du traitement de la date", e, 'ClientDashboard');
       }
     });
     

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { 
-  Calendar, ChevronDown, Filter, Download, Plus, Edit, Trash2, Eye, 
-  MoreHorizontal, ArrowLeft, ArrowRight, X, Building2, User, Phone, 
+import {
+  Calendar, ChevronDown, Filter, Download, Plus, Edit, Trash2, Eye,
+  MoreHorizontal, ArrowLeft, ArrowRight, X, Building2, User, Phone,
   Mail, Globe, MapPin, FileText, AlertCircle, Bell, Target
 } from 'lucide-react';
+import logger from '@/utils/logger';
 
 // Services
 class DateService {
@@ -190,7 +191,7 @@ const ConsultantCalendar = () => {
     try {
       LocalStorageService.saveCalendarData(calendarData);
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde des données:", error);
+      logger.error("Erreur lors de la sauvegarde des données", error, 'ConsultantCalendar');
       showToast("Erreur lors de la sauvegarde des données", "error");
     }
   }, [calendarData]);
@@ -199,7 +200,7 @@ const ConsultantCalendar = () => {
     try {
       LocalStorageService.saveConsultants(consultants);
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde des consultants:", error);
+      logger.error("Erreur lors de la sauvegarde des consultants", error, 'ConsultantCalendar');
       showToast("Erreur lors de la sauvegarde des consultants", "error");
     }
   }, [consultants]);
@@ -433,7 +434,7 @@ const ConsultantCalendar = () => {
       URL.revokeObjectURL(url);
       showToast('Données exportées avec succès');
     } catch (error) {
-      console.error("Erreur lors de l'exportation:", error);
+      logger.error("Erreur lors de l'exportation", error, 'ConsultantCalendar');
       showToast("Erreur lors de l'exportation", "error");
     }
   };
@@ -448,7 +449,7 @@ const ConsultantCalendar = () => {
           setCalendarData(importedData);
           showToast('Données importées avec succès');
         } catch (error) {
-          console.error("Erreur lors de l'importation:", error);
+          logger.error("Erreur lors de l'importation", error, 'ConsultantCalendar');
           showToast("Erreur lors de l'importation", "error");
         }
       };

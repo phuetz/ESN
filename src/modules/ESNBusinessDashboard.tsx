@@ -1,10 +1,11 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { 
+import {
   Users, Euro, TrendingUp, AlertTriangle,
   BarChart2, PieChart, Calendar, ListFilter, Plus
 } from 'lucide-react';
 import DataGridESN from '@/components/ui/DataGridESN';
+import logger from '@/utils/logger';
 
 export const ESNBusinessDashboard: React.FC = () => {
   const [viewMode, setViewMode] = React.useState<'dashboard' | 'grid'>('dashboard');
@@ -129,7 +130,7 @@ export const ESNBusinessDashboard: React.FC = () => {
           actionButtons={[
             {
               icon: <Plus size={18} />,
-              onClick: () => console.log('Add business entry'),
+              onClick: () => logger.debug('Add business entry action triggered', {}, 'ESNBusinessDashboard'),
               title: "Ajouter une entrée"
             }
           ]}

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import DataGridESN from '@/components/ui/DataGridESN';
-import { 
+import {
   Building2, User, Phone, Mail, X, ZoomIn, ZoomOut,
   Filter, Save, Maximize2, Minimize2, Map, Plus,
   Star, Edit, Trash2, Calendar } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import logger from '@/utils/logger';
 
 interface Consultant {
   id: number;
@@ -148,27 +149,27 @@ const ConsultantGrid: React.FC = () => {
   const actionButtons = [
     {
       icon: <Plus size={18} />,
-      onClick: () => console.log('Add consultant'),
+      onClick: () => logger.debug('Add consultant action triggered', {}, 'ConsultantGrid'),
       title: "Ajouter un consultant"
     },
     {
       icon: <Edit size={18} />,
-      onClick: () => console.log('Edit consultant'),
+      onClick: () => logger.debug('Edit consultant action triggered', {}, 'ConsultantGrid'),
       title: "Modifier"
     },
     {
       icon: <Trash2 size={18} />,
-      onClick: () => console.log('Delete consultant'),
+      onClick: () => logger.debug('Delete consultant action triggered', {}, 'ConsultantGrid'),
       title: "Supprimer"
     }
   ];
 
   const handleRowClick = (row: Consultant) => {
-    console.log('Selected consultant:', row);
+    logger.debug('Selected consultant', { consultant: row }, 'ConsultantGrid');
   };
 
   const handleSelectionChange = (selectedItems: Consultant[]) => {
-    console.log('Selection changed:', selectedItems);
+    logger.debug('Selection changed', { count: selectedItems.length }, 'ConsultantGrid');
   };
 
   return (
