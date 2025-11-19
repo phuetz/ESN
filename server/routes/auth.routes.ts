@@ -100,7 +100,7 @@ router.get('/profile', authenticate, authController.getProfile);
  *       200:
  *         description: Token refreshed successfully
  */
-router.post('/refresh', authController.refreshToken);
+router.post('/refresh', authLimiter, authController.refreshToken);
 
 /**
  * @swagger

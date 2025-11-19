@@ -1,6 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
 
+/**
+ * Sanitize sensitive fields from objects before logging
+ * Removes passwords, tokens, and other sensitive data
+ */
+const sanitizeSensitiveData = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') {
+    return obj;
+  }
+
+  const sensitiveFields = [
+    'password',
+    'newPassword',
+    'oldPassword',
+    'confirmPassword',
+    'token',
+    'refreshToken',
+    'accessToken',
+    'authorization',
+    'secret',
+    'apiKey',
+    'creditCard',
+    'cvv',
+    'ssn',
+  ];
+
+  const sanitized = Array.isArray(obj) ? [...obj] : { ...obj };
+
+  for (const key in sanitized) {
+    if (sensitiveFields.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+      sanitized[key] = sanitizeSensitiveData(sanitized[key]);
+    }
+  }
+
+  return sanitized;
+};
+
 export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
@@ -57,6 +95,7 @@ export const errorHandler = (
   }
 
   // Enhanced error logging with more context
+  // Always sanitize sensitive data, even in development
   const errorLog = {
     timestamp: new Date().toISOString(),
     level: statusCode >= 500 ? 'error' : 'warn',
@@ -68,10 +107,10 @@ export const errorHandler = (
     ip: req.ip || req.socket.remoteAddress,
     userAgent: req.get('user-agent'),
     userId: (req as any).user?.id,
-    stack: err.stack,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     isOperational,
-    requestBody: process.env.NODE_ENV === 'development' ? req.body : undefined,
-    requestQuery: process.env.NODE_ENV === 'development' ? req.query : undefined,
+    requestBody: process.env.NODE_ENV === 'development' ? sanitizeSensitiveData(req.body) : undefined,
+    requestQuery: process.env.NODE_ENV === 'development' ? sanitizeSensitiveData(req.query) : undefined,
   };
 
   if (statusCode >= 500) {

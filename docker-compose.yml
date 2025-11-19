@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: esn_db
       POSTGRES_USER: esnuser
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       # Performance tuning
       POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-256MB}
       POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
@@ -53,10 +53,10 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: esnuser
-      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       DB_DATABASE: esn_db
-      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-this-too}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required - generate with: openssl rand -base64 32}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required - generate with: openssl rand -base64 32}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}

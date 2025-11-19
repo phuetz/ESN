@@ -16,13 +16,19 @@ const isValidEmail = (email: string): boolean => {
 
 // Helper function to validate password strength
 const isStrongPassword = (password: string): boolean => {
-  // At least 8 characters, contains uppercase, lowercase, number
-  return (
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password) &&
-    /[0-9]/.test(password)
-  );
+  // Enforce password requirements:
+  // - Minimum 8 characters, maximum 72 (bcrypt limit)
+  // - Contains uppercase, lowercase, number, and special character
+  if (password.length < 8 || password.length > 72) {
+    return false;
+  }
+
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+  return hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
 };
 
 /**
@@ -50,7 +56,7 @@ export const register = asyncHandler(
     // Validate password strength
     if (!isStrongPassword(password)) {
       throw new AppError(
-        'Password must be at least 8 characters and contain uppercase, lowercase, and number',
+        'Password must be 8-72 characters and contain uppercase, lowercase, number, and special character (!@#$%^&* etc.)',
         400,
         'WEAK_PASSWORD'
       );
