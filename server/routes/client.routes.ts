@@ -2,8 +2,12 @@ import { Router } from 'express';
 import * as clientController from '../controllers/client.controller';
 import { validateDto } from '../middleware/validation';
 import { CreateClientDto, UpdateClientDto } from '../dto/client.dto';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+// Apply authentication to all client routes
+router.use(authenticate);
 
 /**
  * @swagger

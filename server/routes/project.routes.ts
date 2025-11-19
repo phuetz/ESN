@@ -2,8 +2,12 @@ import { Router } from 'express';
 import * as projectController from '../controllers/project.controller';
 import { validateDto } from '../middleware/validation';
 import { CreateProjectDto, UpdateProjectDto } from '../dto/project.dto';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+// Apply authentication to all project routes
+router.use(authenticate);
 
 /**
  * @swagger

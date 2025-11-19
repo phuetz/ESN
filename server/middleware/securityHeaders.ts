@@ -31,17 +31,22 @@ export const enhancedSecurityHeaders = (
     'geolocation=(), microphone=(), camera=(), payment=()'
   );
 
-  // Content Security Policy (adjust based on your needs)
+  // Content Security Policy - strict policy without unsafe-inline
+  // For development, we allow unsafe-inline for hot reload
+  // For production, use nonces or hashes for inline scripts/styles
   if (process.env.NODE_ENV === 'production') {
     res.setHeader(
       'Content-Security-Policy',
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline'; " +  // Adjust based on your requirements
-      "style-src 'self' 'unsafe-inline'; " +
+      "script-src 'self'; " +  // Removed unsafe-inline - use nonces/hashes instead
+      "style-src 'self'; " +    // Removed unsafe-inline - use nonces/hashes instead
       "img-src 'self' data: https:; " +
       "font-src 'self' data:; " +
       "connect-src 'self'; " +
-      "frame-ancestors 'none';"
+      "frame-ancestors 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self'; " +
+      "upgrade-insecure-requests;"
     );
   }
 

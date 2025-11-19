@@ -16,11 +16,13 @@ export enum UserRole {
 }
 
 @Entity('users')
+@Index(['email', 'isActive']) // Composite index for login queries
 export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Column({ unique: true })
+  @Index() // Single index for email lookups
   email!: string;
 
   @Column()

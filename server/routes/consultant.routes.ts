@@ -2,8 +2,12 @@ import { Router } from 'express';
 import * as consultantController from '../controllers/consultant.controller';
 import { validateDto } from '../middleware/validation';
 import { CreateConsultantDto, UpdateConsultantDto } from '../dto/consultant.dto';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+// Apply authentication to all consultant routes
+router.use(authenticate);
 
 /**
  * @swagger

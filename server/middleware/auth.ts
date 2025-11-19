@@ -15,7 +15,13 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    // Try to get token from httpOnly cookie first (more secure)
+    // Fall back to Authorization header for backward compatibility
+    let token = req.cookies?.accessToken;
+
+    if (!token && req.headers.authorization) {
+      token = req.headers.authorization.replace('Bearer ', '');
+    }
 
     if (!token) {
       throw new AppError('No token provided', 401);
