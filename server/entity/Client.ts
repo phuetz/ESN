@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { Project } from './Project';
 
@@ -28,6 +29,7 @@ export class Client {
   id!: number;
 
   @Column()
+  @Index()
   name!: string;
 
   @Column({
@@ -44,6 +46,7 @@ export class Client {
   contactName?: string;
 
   @Column({ nullable: true })
+  @Index()
   contactEmail?: string;
 
   @Column({ nullable: true })
@@ -72,6 +75,7 @@ export class Client {
     enum: ClientStatus,
     default: ClientStatus.ACTIVE,
   })
+  @Index()
   status!: ClientStatus;
 
   // Relations

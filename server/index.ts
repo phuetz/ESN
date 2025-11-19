@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import config from './config';
 import logger from './utils/logger';
 import { initializeDatabase } from './data-source';
+import AppDataSource from './data-source';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimit';
 import { setupSwagger } from './config/swagger';
@@ -30,9 +31,9 @@ app.use(
   })
 );
 
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsing middleware with size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -52,14 +53,40 @@ app.use((req, res, next) => {
  *     responses:
  *       200:
  *         description: Server is healthy
+ *       503:
+ *         description: Server is unhealthy
  */
-app.get('/health', (req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: config.node_env,
-  });
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    // Check database connection
+    const dbHealthy = AppDataSource.isInitialized;
+
+    if (!dbHealthy) {
+      return res.status(503).json({
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: config.node_env,
+        database: 'disconnected',
+      });
+    }
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: config.node_env,
+      database: 'connected',
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: config.node_env,
+      database: 'error',
+    });
+  }
 });
 
 // API routes with versioning
@@ -113,7 +140,7 @@ process.on('uncaughtException', (error: Error) => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason: any) => {
+process.on('unhandledRejection', (reason: unknown) => {
   logger.error('Unhandled Rejection:', reason);
   process.exit(1);
 });

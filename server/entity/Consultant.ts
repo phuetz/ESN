@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Project } from './Project';
 import { User } from './User';
@@ -30,12 +31,14 @@ export class Consultant {
   lastName!: string;
 
   @Column({ nullable: true })
+  @Index()
   email?: string;
 
   @Column({ nullable: true })
   phone?: string;
 
   @Column()
+  @Index()
   role!: string;
 
   @Column({
@@ -43,6 +46,7 @@ export class Consultant {
     enum: ConsultantStatus,
     default: ConsultantStatus.ACTIVE,
   })
+  @Index()
   status!: ConsultantStatus;
 
   @Column({ type: 'int', default: 0 })

@@ -75,7 +75,7 @@ export const createConsultant = asyncHandler(
     const consultantRepository = AppDataSource.getRepository(Consultant);
 
     const consultant = consultantRepository.create(req.body);
-    const savedConsultant = await consultantRepository.save(consultant);
+    const savedConsultant = await consultantRepository.save(consultant) as unknown as Consultant;
 
     logger.info(`Consultant created: ${savedConsultant.firstName} ${savedConsultant.lastName}`);
 
