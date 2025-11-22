@@ -164,15 +164,11 @@ export const register = asyncHandler(
       setTokenCookies(res, token, refreshToken);
 
       // Return user data without tokens in response body
-      // Tokens are now in httpOnly cookies
+      // Tokens are now in httpOnly cookies (secure against XSS)
       res.status(201).json({
         success: true,
         data: {
           user: savedUser.toJSON(),
-          // Legacy: still return tokens for backward compatibility
-          // TODO: Remove after frontend migration is complete
-          token,
-          refreshToken,
         },
         message: 'User registered successfully',
       });
@@ -278,14 +274,12 @@ export const login = asyncHandler(
       // Set httpOnly cookies for tokens (secure against XSS)
       setTokenCookies(res, token, refreshToken);
 
+      // Return user data without tokens in response body
+      // Tokens are now in httpOnly cookies (secure against XSS)
       res.json({
         success: true,
         data: {
           user: user.toJSON(),
-          // Legacy: still return tokens for backward compatibility
-          // TODO: Remove after frontend migration is complete
-          token,
-          refreshToken,
         },
         message: 'Login successful',
       });
@@ -368,14 +362,10 @@ export const refreshToken = asyncHandler(
       // Set new httpOnly cookies for tokens
       setTokenCookies(res, newToken, newRefreshToken);
 
+      // Tokens are now in httpOnly cookies (secure against XSS)
       res.json({
         success: true,
-        data: {
-          // Legacy: still return tokens for backward compatibility
-          // TODO: Remove after frontend migration is complete
-          token: newToken,
-          refreshToken: newRefreshToken,
-        },
+        message: 'Token refreshed successfully',
       });
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {

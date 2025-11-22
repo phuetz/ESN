@@ -22,46 +22,12 @@ export interface ApiRequestConfig {
 
 class ApiClient {
   private baseURL: string;
-  private token: string | null = null;
   private csrfToken: string | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    // SECURITY: Tokens are now stored in httpOnly cookies (secure against XSS)
-    // Legacy localStorage support maintained for backward compatibility only
-    // TODO: Remove localStorage after migration is complete
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('auth_token');
-    }
-  }
-
-  setToken(token: string | null) {
-    this.token = token;
-    // SECURITY: Deprecated - tokens should be in httpOnly cookies
-    // This is kept for backward compatibility only
-    if (typeof window !== 'undefined') {
-      if (token) {
-        localStorage.setItem('auth_token', token);
-      } else {
-        localStorage.removeItem('auth_token');
-      }
-    }
-  }
-
-  getToken(): string | null {
-    return this.token;
-  }
-
-  /**
-   * Clear tokens from localStorage (for migration)
-   * Call this after successful login/register to migrate from localStorage to cookies
-   */
-  clearLegacyTokens() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('refresh_token');
-      this.token = null;
-    }
+    // Authentication is now handled via httpOnly cookies (secure against XSS)
+    // No client-side token storage required
   }
 
   /**
@@ -105,9 +71,8 @@ class ApiClient {
       ...customHeaders,
     });
 
-    if (this.token) {
-      headers.set('Authorization', `Bearer ${this.token}`);
-    }
+    // Authentication is handled via httpOnly cookies (credentials: 'include')
+    // No Authorization header needed
 
     // Add CSRF token for unsafe methods (POST, PUT, DELETE, PATCH)
     if (includeCsrf) {

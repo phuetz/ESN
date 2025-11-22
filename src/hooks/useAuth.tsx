@@ -9,7 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -32,24 +32,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
 
-  // Load user profile on mount if token exists
+  // Check authentication status on mount by attempting to fetch profile
+  // If httpOnly cookies are valid, profile will be returned
   useEffect(() => {
     const loadUser = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          const profile = await authService.getProfile();
-          setUser(profile);
-        } catch (error) {
-          // Token might be expired or invalid
-          authService.logout();
-          showToast('Session expired. Please login again.', 'warning');
-        }
+      try {
+        const profile = await authService.getProfile();
+        setUser(profile);
+      } catch (error) {
+        // Not authenticated or session expired - this is normal
+        // No toast needed for initial auth check failure
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     loadUser();
-  }, [showToast]);
+  }, []);
 
   const login = async (credentials: LoginCredentials) => {
     try {
@@ -81,10 +81,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    authService.logout();
-    setUser(null);
-    showToast('Logged out successfully', 'info');
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      showToast('Logged out successfully', 'info');
+    } catch (error) {
+      // Still clear user state even if logout request fails
+      setUser(null);
+      logger.error('Logout error', error, 'useAuth');
+    }
   };
 
   const refreshProfile = async () => {
@@ -93,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(profile);
     } catch (error) {
       logger.error('Failed to refresh profile', error, 'useAuth');
-      logout();
+      await logout();
     }
   };
 

@@ -26,7 +26,6 @@ export interface RegisterData {
 
 export interface AuthResponse {
   user: User;
-  token: string;
 }
 
 export const authService = {
@@ -34,7 +33,8 @@ export const authService = {
     const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
 
     if (response.success && response.data) {
-      apiClient.setToken(response.data.token);
+      // Authentication is now handled via httpOnly cookies
+      // No client-side token storage required
       return response.data;
     }
 
@@ -45,7 +45,8 @@ export const authService = {
     const response = await apiClient.post<AuthResponse>('/auth/register', data);
 
     if (response.success && response.data) {
-      apiClient.setToken(response.data.token);
+      // Authentication is now handled via httpOnly cookies
+      // No client-side token storage required
       return response.data;
     }
 
@@ -62,15 +63,22 @@ export const authService = {
     throw new Error('Failed to fetch profile');
   },
 
-  logout() {
-    apiClient.setToken(null);
+  async logout(): Promise<void> {
+    // Call backend to clear httpOnly cookies and invalidate refresh token
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      // Even if logout fails on server, we should still clear local state
+      console.warn('Logout request failed:', error);
+    }
   },
 
-  isAuthenticated(): boolean {
-    return !!apiClient.getToken();
-  },
+  async refreshToken(): Promise<void> {
+    // Refresh token is in httpOnly cookie, just call the endpoint
+    const response = await apiClient.post('/auth/refresh');
 
-  getToken(): string | null {
-    return apiClient.getToken();
+    if (!response.success) {
+      throw new Error('Token refresh failed');
+    }
   },
 };
